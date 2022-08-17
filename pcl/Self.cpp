@@ -1,20 +1,20 @@
 ﻿#include"head.h"
 
-std::vector<double> _Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
+std::vector<double> _Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold, double P) {
 	const int maxSize = cloud->points.size();
 	//! 初始化最优点云
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_best(new pcl::PointCloud<pcl::PointXYZ>);
 	cloud_best->points.clear();
 	cloud_best->points.resize(maxSize);
 	//! 设置最大迭代值 ；最终结果的可信率
-	int N = 1e4; double P = 0.99;
+	//int N = 1e4; double P = 0.99;
 	//! 平面方程 => Ax + By + Cz + D = 0
 	double A = 0, B = 0, C = 0, D = 0;
 	//! 最优
-	int best_A = 0, best_B = 0, best_C = 0, best_D = 0;
+	double best_A = 0, best_B = 0, best_C = 0, best_D = 0;
 	double distance = 0;
 	//! 距离阈值
-	float tolerance = 0.01;
+	//float threshold = 0.01;
 	//! 票数
 	int ticket = 0, best_ticket = 0;
 	//! 迭代次数
@@ -55,7 +55,7 @@ std::vector<double> _Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
 		//! 遍历所有点，判断该点距离 是否在 由三点确定平面的阈值内
 		for (int l = 0; l < cloud->points.size(); l++) {
 			distance = abs(cloud->points[l].x * A - cloud->points[l].y * B + C * cloud->points[l].z + D) / (sqrt(A * A + B * B + C * C));
-			if (distance < tolerance) {
+			if (distance < threshold) {
 				inliers.push_back(l);
 				ticket++;
 			}
@@ -98,14 +98,14 @@ std::vector<double> _Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
 	return vPara;
 }
 
-std::vector<double> _Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
+std::vector<double> _Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold, double P) {
 	const int maxSize = cloud->points.size();
 	//! 初始化最优点云
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_best(new pcl::PointCloud<pcl::PointXYZ>);
 	cloud_best->points.clear();
 	cloud_best->points.resize(maxSize);
 	//! 设置最大迭代值 ；最终结果的可信率
-	int N = 1e4; double P = 0.99;
+	//int N = 1e4; double P = 0.99;
 	//! 平面方程 => Ax + By + Cz + D = 0
 	double A = 0, B = 0, C = 0, D = 0;
 	//! 最优
@@ -113,7 +113,7 @@ std::vector<double> _Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
 	Eigen::Vector3d best_p2;
 	double distance = 0;
 	//! 距离阈值
-	float tolerance = 0.01;
+	//float tolerance = 0.01;
 	//! 票数
 	int ticket = 0, best_ticket = 0;
 	//! 迭代次数
@@ -155,7 +155,7 @@ std::vector<double> _Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
 
 			distance = (p1 - p0).cross(p2).norm() / p2.norm();
 
-			if (distance < tolerance) {
+			if (distance < threshold) {
 				inliers.push_back(l);
 				ticket++;
 			}
@@ -202,7 +202,7 @@ std::vector<double> _Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
 	return vPara;
 }
 
-std::vector<double> _Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
+std::vector<double> _Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold, double P) {
 	//todo 1. 计算三点所在平面得出平面方程并保留该平面所有点 (参数 A B C 为垂直于该平面向量)
 	//todo 2. 计算两直线交点得到圆心，半径
 	//todo    2.1 计算两线段中点
@@ -212,7 +212,7 @@ std::vector<double> _Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
 	int maxSize = cloud->points.size();
 
 	//! 可变参数（传入） -> 最大迭代次数  置信度  距离阈值
-	double N = 10000; double P = 0.99; double tolerance = 0.1;
+	//double N = 10000; double P = 0.99; double tolerance = 0.1;
 
 	//! 存贮三点确定的平面
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZ>);
@@ -285,7 +285,7 @@ std::vector<double> _Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
 		inliers_plane.clear();
 		for (int l = 0; l < cloud->points.size(); l++) {
 			double distance_plane = abs(cloud->points[l].x * plane_A - cloud->points[l].y * plane_B + plane_C * cloud->points[l].z + plane_D) / (sqrt(plane_A * plane_A + plane_B * plane_B + plane_C * plane_C));
-			if (distance_plane < tolerance) {
+			if (distance_plane < threshold) {
 				inliers_plane.push_back(l);
 			}
 		}
@@ -322,7 +322,7 @@ std::vector<double> _Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
 				+ pow(((double)cloud_plane->points[l].y - center_y), 2)
 				+ pow(((double)cloud_plane->points[l].z - center_z), 2)) - r);
 
-			if (distance < tolerance) {
+			if (distance < threshold) {
 				inliers_circle.push_back(l);
 				ticket++;
 			}
@@ -376,7 +376,7 @@ std::vector<double> _Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
 	return vPara;
 }
 
-std::vector<double> _Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
+std::vector<double> _Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold, double P) {
 	//todo 1. 计算三点所在平面得出平面方程并保留该平面所有点 (参数 A B C 为垂直于该平面向量)
 	//todo 2. 计算两直线交点得到圆心，半径
 	//todo    2.1 计算两线段中点
@@ -386,7 +386,7 @@ std::vector<double> _Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
 	int maxSize = cloud->points.size();
 
 	//! 可变参数（传入） -> 最大迭代次数  置信度  距离阈值
-	double N = 10000; double P = 0.99; double tolerance = 0.8;
+	//double N = 10000; double P = 0.99; double tolerance = 0.8;
 
 	//! 存储最优内点
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_best(new pcl::PointCloud<pcl::PointXYZ>);
@@ -476,7 +476,7 @@ std::vector<double> _Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud) {
 				+ pow(((double)cloud->points[l].y - center_y), 2)
 				+ pow(((double)cloud->points[l].z - center_z), 2)) - r);
 
-			if (distance < tolerance) {
+			if (distance < threshold) {
 				inliers_circle.push_back(l);
 				ticket++;
 			}

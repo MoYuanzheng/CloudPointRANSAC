@@ -2,7 +2,6 @@
 
 int main() {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-
 	//! ------------------------------读入点云------------------------------
 
 	//if (pcl::io::loadPCDFile("test.pcd", *cloud) < 0) {
@@ -11,20 +10,17 @@ int main() {
 	//}
 
 	//! ------------------------------制作点云------------------------------
-
 	const int maxSize = 1450;
-	//初始化点云
-
 	cloud->points.clear();
 	cloud->points.resize(maxSize);
 
-	//填充点云 -> 噪声
+	//! 填充点云 -> 噪声
 	for (int i = 0; i < 150; ++i) {
 		cloud->points[i].x = rand() % 100;
 		cloud->points[i].y = rand() % 100;
 		cloud->points[i].z = rand() % 100;
 	}
-	//填充点云 -> 平面圆环
+	//! 填充点云 -> 圆环
 	for (int i = 150; i < 350; ++i) {
 		if (i % 2 == 1) {
 			cloud->points[i].x = cos(1.8 * (i - 50)) * 15 + 30;
@@ -37,7 +33,7 @@ int main() {
 			cloud->points[i].z = 25 + rand() % 3;
 		}
 	}
-	//填充点云 -> 平面直线
+	//! 填充点云 -> 直线
 	for (int i = 350; i < 450; ++i) {
 		if (i % 2 == 1) {
 			cloud->points[i].x = i - 350;
@@ -51,7 +47,7 @@ int main() {
 		}
 
 	}
-	//填充点云 -> 平面
+	//! 填充点云 -> 平面
 	for (int i = 450; i < 600; ++i) {
 		if (i % 2 == 1) {
 			cloud->points[i].x = rand() % 100;
@@ -65,7 +61,7 @@ int main() {
 		}
 
 	}
-	//填充点云 -> 球
+	//! 填充点云 -> 球
 	for (int i = 650; i < cloud->points.size(); ++i) {
 		if (i < 850) {
 			if (i % 3 == 1 && i % 3 == 2) {
@@ -107,8 +103,7 @@ int main() {
 
 		}
 	}
-
-	//填充点云 -> 平面补充
+	//! 填充点云 -> 平面补充
 	for (int i = 1250; i < 1450; ++i) {
 		cloud->points[i].x = rand() % 100;
 		cloud->points[i].y = rand() % 100;
@@ -118,17 +113,24 @@ int main() {
 
 	cout << "->加载数据点的个数：" << cloud->points.size() << endl;
 	std::vector<double> vPara;
+
 	//vPara = RANSAC_Plane(cloud);
 	//vPara = _Plane(cloud);
 
-	//vPara = _Circle3D(cloud);
 	//vPara = RANSAC_Circle3D(cloud);
+	//vPara = _Circle3D(cloud);
 
-	//vPara = _Line(cloud);
 	//vPara = RANSAC_Line(cloud);
+	//vPara = _Line(cloud);
 
-	//vPara = _Sphere(cloud);
 	//vPara = RANSAC_Sphere(cloud);
+	vPara = _Sphere(cloud);
+
+	//vPara = RANSAC_Circle2D(cloud);
+	//vPara = _Circle2D(cloud);
+
+	//vPara = RANSAC_Cylinder(cloud);
+	//vPara = _Cylinder(cloud);
 
 	for (int i = 0; i < vPara.size(); i++) {
 		cout << vPara[i] << endl;
