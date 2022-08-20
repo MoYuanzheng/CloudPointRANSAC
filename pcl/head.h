@@ -9,6 +9,7 @@
 #include <pcl/segmentation/sac_segmentation.h>	
 #include <pcl/visualization/cloud_viewer.h>		
 
+#include <pcl/filters/passthrough.h>
 #include <Eigen/Dense>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
@@ -20,13 +21,14 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include <ctime>
 
 using namespace std;
 using Eigen::Vector3d;
 
 std::vector<double> RANSAC_Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1);
 std::vector<double> RANSAC_Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.01);
-std::vector<double> RANSAC_Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.01);
+std::vector<double> RANSAC_Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e5, double threshold = 0.1);
 std::vector<double> RANSAC_Circle2D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1);
 std::vector<double> RANSAC_Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1);
 std::vector<double> RANSAC_Cylinder(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double Rmin, double Rmax, double N = 1e4, double threshold = 0.1);
@@ -38,4 +40,8 @@ void view(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud);
 std::vector<double> _Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.01, double P = 0.99);
 std::vector<double> _Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1, double P = 0.99);
 std::vector<double> _Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.01, double P = 0.99);
-std::vector<double> _Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.5, double P = 0.99);
+std::vector<double> _Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.2, double P = 0.99);
+
+std::vector<double> _Plane(Eigen::Vector3d p1, Eigen::Vector3d p2, Eigen::Vector3d p3);
+std::vector<int> SplitPonitCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, std::vector<Eigen::Vector3d> vertex);
+double ComputeN(double ratioE, double P, int sampleNumber);

@@ -35,11 +35,11 @@ std::vector<double> _Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N,
 	while (plane_N > sample_count) {
 
 		//! 三点确定一个平面
-		srand(index++);
+		srand(time(0) + index++);
 		point_A = rand() % maxSize;
-		srand(index++);
+		srand(time(0) + index++);
 		point_B = rand() % maxSize;
-		srand(index++);
+		srand(time(0) + index++);
 		point_C = rand() % maxSize;
 
 		//! 计算平面方程参数
@@ -70,7 +70,7 @@ std::vector<double> _Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N,
 			best_D = D;
 			pcl::copyPointCloud<pcl::PointXYZ>(*cloud, inliers, *cloud_best);
 			e = 1 - ((double)ticket / (double)cloud->points.size());
-			double temp_N = log(1 - P) / log(1 - pow((1 - e), 3));
+			double temp_N = ComputeN(e, P, 3);
 
 			//! 防止计算后 大于 最大迭代预设值
 			if (temp_N < plane_N) {
@@ -94,7 +94,7 @@ std::vector<double> _Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N,
 	vPara.push_back(best_A);
 	vPara.push_back(best_B);
 	vPara.push_back(best_C);
-	vPara.push_back(D);
+	vPara.push_back(best_D);
 	return vPara;
 }
 
@@ -134,11 +134,10 @@ std::vector<double> _Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, 
 	while (line_N > sample_count) {
 
 		//! 三点确定一个平面
-		srand(index++);
+		srand(time(0) + index++);
 		point_A = rand() % maxSize;
-		srand(index++);
+		srand(time(0) + index++);
 		point_B = rand() % maxSize;
-		srand(index++);
 
 		//! 直线上 点 A
 		Eigen::Vector3d p1 = { cloud->points[point_A].x, cloud->points[point_A].y, cloud->points[point_A].z };
@@ -171,7 +170,7 @@ std::vector<double> _Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, 
 			best_inliers = inliers;
 
 			e = 1 - ((double)ticket / (double)cloud->points.size());
-			double temp_N = log(1 - P) / log(1 - pow((1 - e), 2));
+			double temp_N = ComputeN(e, P, 2);
 
 			//! 防止计算后 大于 最大迭代预设值
 			if (temp_N < line_N) {
@@ -340,7 +339,7 @@ std::vector<double> _Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double
 			e = 1 - ((double)ticket / (double)maxSize);
 
 			//! 计算动态迭代次数
-			double temp_N = log(1 - P) / log(1 - pow((1 - e), 3));
+			double temp_N = ComputeN(e, P, 3);
 
 			if (temp_N < circle_N) {
 				circle_N = temp_N;
@@ -494,7 +493,7 @@ std::vector<double> _Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N
 			e = 1 - ((double)ticket / (double)maxSize);
 
 			//! 计算动态迭代次数
-			double temp_N = log(1 - P) / log(1 - pow((1 - e), 3));
+			double temp_N = ComputeN(e, P, 3);
 
 			if (temp_N < circle_N) {
 				circle_N = temp_N;
@@ -520,4 +519,23 @@ std::vector<double> _Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N
 	view(cloud, cloud_best);
 
 	return vPara;
+}
+
+std::vector<double> _Plane(Eigen::Vector3d p1, Eigen::Vector3d p2, Eigen::Vector3d p3) {
+
+	double A = (p3[1] - p1[1]) * (p3[2] - p1[2]) - (p2[2] - p1[2]) * (p3[1] - p1[1]);
+	double B = (p3[0] - p1[0]) * (p2[2] - p1[2]) - (p2[0] - p1[0]) * (p3[2] - p1[2]);
+	double C = (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p3[0] - p1[0]) * (p2[1] - p1[1]);
+	double D = -(p1[0] * A + p1[1] * B + p1[2] * C);
+
+	std::vector<double> vPara;
+	vPara.push_back(A);
+	vPara.push_back(B);
+	vPara.push_back(C);
+	vPara.push_back(D);
+	return vPara;
+}
+
+double ComputeN(double ratioE, double probability, int sampleNumber) {
+	return log(1 - probability) / log(1 - (pow(1 - ratioE, sampleNumber)));
 }

@@ -1,4 +1,61 @@
 ﻿#include"head.h"
+
+
+std::vector<int> SplitPonitCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, std::vector<Eigen::Vector3d> vertex) {
+	vector<Eigen::Vector3d> _vertex = vertex;
+
+	Eigen::Vector3d A = (_vertex[0] + _vertex[1]) / 2;
+	Eigen::Vector3d B = (_vertex[2] + _vertex[3]) / 2;
+	Eigen::Vector3d C = (_vertex[4] + _vertex[5]) / 2;
+	std::vector<double> plane_A = _Plane(A, B, C);
+	double threshold_A = ((_vertex[0] - _vertex[1]) / 2).norm();
+
+	Eigen::Vector3d D = (_vertex[0] + _vertex[3]) / 2;
+	Eigen::Vector3d E = (_vertex[1] + _vertex[2]) / 2;
+	Eigen::Vector3d F = (_vertex[5] + _vertex[6]) / 2;
+	std::vector<double> plane_B = _Plane(D, E, F);
+	double threshold_B = ((_vertex[3] - _vertex[0]) / 2).norm();
+
+	Eigen::Vector3d G = (_vertex[5] + _vertex[1]) / 2;
+	Eigen::Vector3d H = (_vertex[2] + _vertex[6]) / 2;
+	Eigen::Vector3d I = (_vertex[7] + _vertex[3]) / 2;
+	std::vector<double> plane_C = _Plane(G, H, I);
+	double threshold_C = ((_vertex[7] - _vertex[3]) / 2).norm();
+
+	cout << "threshold_A = " << threshold_A << endl;
+	cout << "threshold_B = " << threshold_B << endl;
+	cout << "threshold_C = " << threshold_C << endl;
+
+	double distance_A = 0;
+	double distance_B = 0;
+	double distance_C = 0;
+	std::vector<int> inliers;
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cube(new pcl::PointCloud<pcl::PointXYZ>);
+	cloud_cube->points.clear();
+	cloud_cube->points.resize(cloud->points.size());
+
+	for (int i = 0; i < cloud->points.size(); i++) {
+		double distance_A = abs(cloud->points[i].x * plane_A[0] + cloud->points[i].y * plane_A[1] + plane_A[2]
+			* cloud->points[i].z + plane_A[3]) / (sqrt(plane_A[0] * plane_A[0] + plane_A[1] * plane_A[1] + plane_A[2] * plane_A[2]));
+		if (distance_A > threshold_A) continue;
+
+		double distance_B = abs(cloud->points[i].x * plane_B[0] + cloud->points[i].y * plane_B[1] + plane_B[2]
+			* cloud->points[i].z + plane_B[3]) / (sqrt(plane_B[0] * plane_B[0] + plane_B[1] * plane_B[1] + plane_B[2] * plane_B[2]));
+		if (distance_B > threshold_B) continue;
+
+		double distance_C = abs(cloud->points[i].x * plane_C[0] + cloud->points[i].y * plane_C[1] + plane_C[2]
+			* cloud->points[i].z + plane_C[3]) / (sqrt(plane_C[0] * plane_C[0] + plane_C[1] * plane_C[1] + plane_C[2] * plane_C[2]));
+		if (distance_C > threshold_C) continue;
+		cout << "x = " << cloud->points[i].x << "    y = " << cloud->points[i].y << "    z = " << cloud->points[i].z << endl;
+		inliers.push_back(i);
+	}
+
+	pcl::copyPointCloud<pcl::PointXYZ>(*cloud, inliers, *cloud_cube);
+	view(cloud, cloud_cube);
+	cout << inliers.size() << endl;
+	return inliers;
+}
+
 /*
 	【平面】
 	参数方程形式 => Ax + By + Cz + D = 0
@@ -12,7 +69,7 @@
 			vector[2] => 参数 C
 			vector[3] => 参数 D
 */
-std::vector<double> RANSAC_Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold ) {
+std::vector<double> RANSAC_Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
 	pcl::SampleConsensusModelPlane<pcl::PointXYZ>::Ptr
 		model(new pcl::SampleConsensusModelPlane<pcl::PointXYZ>(cloud));   //针对平面模型的对象
 
@@ -23,6 +80,7 @@ std::vector<double> RANSAC_Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, dou
 	ransac.setDistanceThreshold(threshold);
 	//设置最大迭代次数
 	ransac.setMaxIterations(N);
+	ransac.setProbability(0.99);
 	ransac.computeModel();
 	//存储估计所得的局内点
 	ransac.getInliers(inliers);
@@ -34,14 +92,18 @@ std::vector<double> RANSAC_Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, dou
 	//返回参数
 	std::vector<double>vPara;
 
+	view(cloud, inliers);
+
+	cout << "best_A = " << model_coefficients[0] << endl;
+	cout << "best_B = " << model_coefficients[1] << endl;
+	cout << "best_C = " << model_coefficients[2] << endl;
+	cout << "best_D = " << model_coefficients[3] << endl;
+	cout << "best_ticket = " << inliers.size() << endl;
 	for (int i = 0; i < model_coefficients.size(); i++) {
 		vPara.push_back(model_coefficients[i]);
 	}
-	view(cloud, inliers);
-
 	return vPara;
 }
-
 
 /*
 	【球体】
@@ -56,7 +118,7 @@ std::vector<double> RANSAC_Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, dou
 			vector[2] => 球心 z 轴坐标（参数 c）
 			vector[3] => 球心 r 半径
 */
-std::vector<double> RANSAC_Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold ) {
+std::vector<double> RANSAC_Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
 	//创建随机采样一致性对象
 	pcl::SampleConsensusModelSphere<pcl::PointXYZ>::Ptr
 		model(new pcl::SampleConsensusModelSphere<pcl::PointXYZ>(cloud));    //针对球模型的对象
@@ -82,7 +144,7 @@ std::vector<double> RANSAC_Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, do
 		vPara.push_back(model_coefficients[i]);
 	}
 
-	view(cloud, inliers);
+	//view(cloud, inliers);
 	return vPara;
 }
 
@@ -101,7 +163,7 @@ std::vector<double> RANSAC_Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, do
 			vector[4] => line_direction.y : 直线方向的  Y  坐标
 			vector[5] => line_direction.z : 直线方向的  Z  坐标
 */
-std::vector<double> RANSAC_Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N , double threshold ) {
+std::vector<double> RANSAC_Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
 	//创建随机采样一致性对象
 	pcl::SampleConsensusModelLine<pcl::PointXYZ>::Ptr
 		model(new pcl::SampleConsensusModelLine<pcl::PointXYZ>(cloud));    //针对直线模型的对象
@@ -149,7 +211,7 @@ std::vector<double> RANSAC_Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, doub
 			vector[5] => axis_direction.z ： 圆柱体轴方向的   Z   坐标
 			vector[6] =>     radius       :  圆柱体截面的半径
 */
-std::vector<double> RANSAC_Cylinder(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double Rmin, double Rmax, double N , double threshold ) {
+std::vector<double> RANSAC_Cylinder(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double Rmin, double Rmax, double N, double threshold) {
 	//-----------------------------法线估计--------------------------------
 	//cout << "->正在计算法线..." << endl;
 	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;	// 创建法向量估计对象
@@ -200,7 +262,7 @@ std::vector<double> RANSAC_Cylinder(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, 
 			vector[1] => center.y : 圆心 y 轴坐标
 			vector[2] =>  radius  : 半径 r
 */
-std::vector<double> RANSAC_Circle2D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N , double threshold ) {
+std::vector<double> RANSAC_Circle2D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
 	//创建随机采样一致性对象
 	pcl::SampleConsensusModelCircle2D<pcl::PointXYZ>::Ptr
 		model(new pcl::SampleConsensusModelCircle2D<pcl::PointXYZ>(cloud));
@@ -232,7 +294,7 @@ std::vector<double> RANSAC_Circle2D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, 
 
 /*
 	【3D圆】（圆环）
-	参数方程形式 => (x - center.x)^2 + (y - center.y)^2 + (z - center.z)^2  = r^2 && ⚪⊥(normal.x, normal.y, normal.z)
+	参数方程形式 => (x - center.x)^2 + (y - center.y)^2 + (z - center.z)^2  = r^2 && Ax + By + Cz + D = 0
 	输入值：
 			1. 点云
 			2. RanSAC最大迭代次数，默认 N == 1e4
@@ -246,7 +308,7 @@ std::vector<double> RANSAC_Circle2D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, 
 			vector[5] => normal.y ： 法线方向的 y 坐标
 			vector[6] => normal.z ： 法线方向的 z 坐标
 */
-std::vector<double> RANSAC_Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N , double threshold ) {
+std::vector<double> RANSAC_Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
 	//创建随机采样一致性对象
 	pcl::SampleConsensusModelCircle3D<pcl::PointXYZ>::Ptr
 		model(new pcl::SampleConsensusModelCircle3D<pcl::PointXYZ>(cloud));
