@@ -21,7 +21,7 @@ std::vector<double> _Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N,
 	double plane_N = N;
 	//! 取样次数
 	int sample_count = 0;
-	//! 内点率
+	//! 外点率
 	double e = 0;
 	//! 内点索引
 	std::vector<int> inliers;

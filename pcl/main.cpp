@@ -2,7 +2,7 @@
 
 int main() {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-	////! ------------------------------读入点云------------------------------
+	//! ------------------------------读入点云------------------------------
 
 	if (pcl::io::loadPCDFile("./pcd/test.pcd", *cloud) < 0) {
 		PCL_ERROR("\a点云文件不存在！\n");
@@ -88,15 +88,15 @@ int main() {
 	//	cloud->points[i].z = 35;
 	//}
 
-	//! 圆柱
-	//for (int j = 0; j < 10; ++j) {
-	//	for (int k = 0; k < 100; ++k) {
-	//		int index = 1450 + j * k;
-	//		cloud->points[index].x = cos(3.6 * (k - 0)) * 10 + 20;
-	//		cloud->points[index].y = sin(3.6 * (k - 0)) * 10 + 20;
-	//		cloud->points[index].z = j + 10;
-	//	}
-	//}
+	//!圆柱
+		//for (int j = 0; j < 10; ++j) {
+		//	for (int k = 0; k < 100; ++k) {
+		//		int index = 1450 + j * k;
+		//		cloud->points[index].x = cos(3.6 * (k - 0)) * 10 + 20;
+		//		cloud->points[index].y = sin(3.6 * (k - 0)) * 10 + 20;
+		//		cloud->points[index].z = j + 10;
+		//	}
+		//}
 	//! ------------------------------点云结束------------------------------
 
 	//! 分割测试
@@ -119,7 +119,7 @@ int main() {
 	std::vector<double> vPara;
 
 	int start_s = clock();
-	vPara = RANSAC_Plane(cloud);
+	vPara = RANSAC_Cylinder(cloud, 3, 7);
 	int stop_s = clock();
 
 	cout << "运行时间 ： " << stop_s - start_s << endl;
@@ -130,7 +130,7 @@ int main() {
 	//vPara = _Circle3D(cloud);
 
 	//vPara = RANSAC_Line(cloud);
-	//vPara = _Line(cloud);
+	//vPara = ;
 
 	//vPara = _Sphere(cloud);
 	//vPara = _Plane(cloud);
