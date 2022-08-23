@@ -115,14 +115,14 @@ int main() {
 
 	//! ------------------------------点云结束------------------------------
 
-	cout << "->加载数据点的个数：" << cloud->points.size() << endl;
-	std::vector<double> vPara;
+	//cout << "->加载数据点的个数：" << cloud->points.size() << endl;
+	//std::vector<double> vPara;
 
-	int start_s = clock();
-	vPara = RANSAC_Cylinder(cloud, 3, 7);
-	int stop_s = clock();
+	//int start_s = clock();
+	//vPara = RANSAC_Cylinder(cloud, 3, 7);
+	//int stop_s = clock();
 
-	cout << "运行时间 ： " << stop_s - start_s << endl;
+	//cout << "运行时间 ： " << stop_s - start_s << endl;
 
 	//vPara =  RANSAC_Sphere(cloud);
 
@@ -140,7 +140,10 @@ int main() {
 
 	//vPara = RANSAC_Cylinder(cloud, 3, 7);
 	//vPara = _Cylinder(cloud);
+	std::vector<double> vPara;
 
+	affine_RANSAC A;
+	A.RANSAC_Cylinder(cloud, 3, 7);
 	for (int i = 0; i < vPara.size(); i++) {
 		cout << vPara[i] << endl;
 	}

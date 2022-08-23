@@ -26,12 +26,12 @@
 using namespace std;
 using Eigen::Vector3d;
 
-std::vector<double> RANSAC_Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1);
-std::vector<double> RANSAC_Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.01);
-std::vector<double> RANSAC_Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e5, double threshold = 0.1);
-std::vector<double> RANSAC_Circle2D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1);
-std::vector<double> RANSAC_Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1);
-std::vector<double> RANSAC_Cylinder(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double Rmin, double Rmax, double N = 1e4, double threshold = 0.1);
+//std::vector<double> RANSAC_Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1);
+//std::vector<double> RANSAC_Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.01);
+//std::vector<double> RANSAC_Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e5, double threshold = 0.1);
+//std::vector<double> RANSAC_Circle2D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1);
+//std::vector<double> RANSAC_Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1);
+//std::vector<double> RANSAC_Cylinder(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double Rmin, double Rmax, double N = 1e4, double threshold = 0.1);
 
 void view(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, std::vector<int> inliers);
 void view(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_best);
@@ -43,5 +43,23 @@ std::vector<double> _Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N =
 std::vector<double> _Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.2, double P = 0.99);
 
 std::vector<double> _Plane(Eigen::Vector3d p1, Eigen::Vector3d p2, Eigen::Vector3d p3);
-std::vector<int> SplitPonitCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, std::vector<Eigen::Vector3d> vertex);
 double ComputeN(double ratioE, double P, int sampleNumber);
+
+
+
+class affine_RANSAC
+{
+public:
+	//affine_RANSAC();
+	std::vector<double> RANSAC_Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1);
+	std::vector<double> RANSAC_Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.01);
+	std::vector<double> RANSAC_Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e5, double threshold = 0.1);
+	std::vector<double> RANSAC_Circle2D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1);
+	std::vector<double> RANSAC_Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N = 1e4, double threshold = 0.1);
+	std::vector<double> RANSAC_Cylinder(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double Rmin, double Rmax, double N = 1e4, double threshold = 0.1);
+	std::vector<int> SplitPonitCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, std::vector<Eigen::Vector3d> vertex);
+
+private:
+
+};
+

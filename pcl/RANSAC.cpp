@@ -1,7 +1,7 @@
 ﻿#include"head.h"
 
 
-std::vector<int> SplitPonitCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, std::vector<Eigen::Vector3d> vertex) {
+std::vector<int> affine_RANSAC::SplitPonitCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, std::vector<Eigen::Vector3d> vertex) {
 	vector<Eigen::Vector3d> _vertex = vertex;
 
 	Eigen::Vector3d A = (_vertex[0] + _vertex[1]) / 2;
@@ -69,7 +69,7 @@ std::vector<int> SplitPonitCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, std
 			vector[2] => 参数 C
 			vector[3] => 参数 D
 */
-std::vector<double> RANSAC_Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
+std::vector<double> affine_RANSAC::RANSAC_Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
 	pcl::SampleConsensusModelPlane<pcl::PointXYZ>::Ptr
 		model(new pcl::SampleConsensusModelPlane<pcl::PointXYZ>(cloud));   //针对平面模型的对象
 
@@ -118,7 +118,7 @@ std::vector<double> RANSAC_Plane(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, dou
 			vector[2] => 球心 z 轴坐标（参数 c）
 			vector[3] => 球心 r 半径
 */
-std::vector<double> RANSAC_Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
+std::vector<double> affine_RANSAC::RANSAC_Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
 	//创建随机采样一致性对象
 	pcl::SampleConsensusModelSphere<pcl::PointXYZ>::Ptr
 		model(new pcl::SampleConsensusModelSphere<pcl::PointXYZ>(cloud));    //针对球模型的对象
@@ -163,7 +163,7 @@ std::vector<double> RANSAC_Sphere(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, do
 			vector[4] => line_direction.y : 直线方向的  Y  坐标
 			vector[5] => line_direction.z : 直线方向的  Z  坐标
 */
-std::vector<double> RANSAC_Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
+std::vector<double> affine_RANSAC::RANSAC_Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
 	//创建随机采样一致性对象
 	pcl::SampleConsensusModelLine<pcl::PointXYZ>::Ptr
 		model(new pcl::SampleConsensusModelLine<pcl::PointXYZ>(cloud));    //针对直线模型的对象
@@ -211,7 +211,7 @@ std::vector<double> RANSAC_Line(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, doub
 			vector[5] => axis_direction.z ： 圆柱体轴方向的   Z   坐标
 			vector[6] =>     radius       :  圆柱体截面的半径
 */
-std::vector<double> RANSAC_Cylinder(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double Rmin, double Rmax, double N, double threshold) {
+std::vector<double> affine_RANSAC::RANSAC_Cylinder(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double Rmin, double Rmax, double N, double threshold) {
 	//-----------------------------法线估计--------------------------------
 	//cout << "->正在计算法线..." << endl;
 	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;	// 创建法向量估计对象
@@ -262,7 +262,7 @@ std::vector<double> RANSAC_Cylinder(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, 
 			vector[1] => center.y : 圆心 y 轴坐标
 			vector[2] =>  radius  : 半径 r
 */
-std::vector<double> RANSAC_Circle2D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
+std::vector<double> affine_RANSAC::RANSAC_Circle2D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
 	//创建随机采样一致性对象
 	pcl::SampleConsensusModelCircle2D<pcl::PointXYZ>::Ptr
 		model(new pcl::SampleConsensusModelCircle2D<pcl::PointXYZ>(cloud));
@@ -308,7 +308,7 @@ std::vector<double> RANSAC_Circle2D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, 
 			vector[5] => normal.y ： 法线方向的 y 坐标
 			vector[6] => normal.z ： 法线方向的 z 坐标
 */
-std::vector<double> RANSAC_Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
+std::vector<double> affine_RANSAC::RANSAC_Circle3D(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double N, double threshold) {
 	//创建随机采样一致性对象
 	pcl::SampleConsensusModelCircle3D<pcl::PointXYZ>::Ptr
 		model(new pcl::SampleConsensusModelCircle3D<pcl::PointXYZ>(cloud));

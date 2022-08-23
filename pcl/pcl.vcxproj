@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="fitting.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RANSAC.cpp" />
     <ClCompile Include="Self.cpp" />
